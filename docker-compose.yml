@@ -1,0 +1,15 @@
+version: "2"
+
+services:
+  duckdns:
+    image: djdefi/rpi-minidlna
+    volumes:
+      - /media:/media
+    environment:
+      - MINIDLNA_MEDIA_DIR=/media
+      - MINIDLNA_FRIENDLY_NAME=RPi
+      - MINIDLNA_PORT=8200
+      - MINIDLNA_DB_DIR=/media/minidlna
+    ports:
+      - 8200:8200
+    network_mode: "host" 

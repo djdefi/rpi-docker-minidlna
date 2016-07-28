@@ -12,4 +12,5 @@ services:
       - MINIDLNA_DB_DIR=/media/dlna
     ports:
       - 8200:8200
-    network_mode: "host" 
+    network_mode: "host"
+    restart: always 

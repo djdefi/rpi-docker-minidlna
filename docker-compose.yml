@@ -1,7 +1,7 @@
 version: "2"
 
 services:
-  duckdns:
+  minidlna:
     image: djdefi/rpi-minidlna
     volumes:
       - /mnt/archive:/media

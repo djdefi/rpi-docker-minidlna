@@ -1,8 +1,6 @@
-FROM djdefi/rpi-alpine
+FROM arm32v7/alpine:3.13
 
-RUN apk update && \
-apk upgrade && \
-apk add bash minidlna && \
+RUN apk add --update-cache bash minidlna && \
 rm -rf /var/cache/apk/*
 
 COPY run.sh /run.sh

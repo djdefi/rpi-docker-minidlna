@@ -1,4 +1,4 @@
-FROM arm32v7/alpine:3.13
+FROM arm32v7/alpine:3.15
 
 RUN apk add --update-cache bash minidlna && \
 rm -rf /var/cache/apk/*

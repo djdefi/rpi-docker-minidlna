@@ -1,10 +1,8 @@
-name: Docker Image CI
+name: Docker Image CI + build + push
 
-on:
+on: 
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches: [ main ]
 
 jobs:
 
@@ -13,6 +11,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - uses: actions/checkout@master
+      # https://github.com/docker/setup-qemu-action
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+      # https://github.com/docker/setup-buildx-action
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Available platforms
+      run: echo ${{ steps.buildx.outputs.platforms }}
+    - name: Run Build 32bit
+      run: |
+        docker buildx build \
+          --platform linux/arm/v7 \
+          --output "type=docker,push=false" \
+          --file ./Dockerfile . \
+          -t djdefi/rpi-minidlna
+    - name: Run Build 64bit
+      run: |
+        docker buildx build \
+          --platform linux/arm64 \
+          --output "type=docker,push=false" \
+          --file ./Dockerfile.arm64v8 . \
+          -t djdefi/rpi-minidlna-arm64
+    - name: List images
+      run: docker images list
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
+      with:
+        image-ref: 'djdefi/rpi-minidlna:latest'
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+    - name: Docker registry login
+      uses: azure/docker-login@v1
+      with:
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    - run: |
+        docker push djdefi/rpi-minidlna:latest
+        docker push djdefi/rpi-minidlna-arm64:latest
